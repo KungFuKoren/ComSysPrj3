@@ -28,7 +28,7 @@ int main()
             char word[WORD_SIZE];
 
             printf("Insert at index: ");
-            scanf("%d", insertIndex);
+            scanf("%d", &insertIndex);
 
             printf("Enter word: ");
             scanf("%s", word);
@@ -38,7 +38,10 @@ int main()
 
             size_t StriListSize = StrList_size(StrList);
 
-            // if()
+            if (insertIndex > StriListSize || insertIndex < 0)
+                break;
+
+            StrList_insertAt(StrList, newWord, insertIndex);
 
             break;
         case (3):

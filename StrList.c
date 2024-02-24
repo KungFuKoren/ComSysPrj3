@@ -71,22 +71,6 @@ size_t StrList_size(const StrList *StrList)
     return counter;
 }
 
-void StrList_insertLast(StrList *StrList, const char *data)
-{
-    Node *root = StrList->root;
-    Node *toAdd = Node_alloc(data, NULL);
-    if (root == NULL)
-    {
-        StrList->root = toAdd;
-        return;
-    }
-    while (root->next)
-    {
-        root = root->next;
-    }
-    root->next = toAdd;
-}
-
 void StrList_insertAt(StrList *StrList, const char *data, int index)
 {
     if (index < 0)
@@ -96,6 +80,7 @@ void StrList_insertAt(StrList *StrList, const char *data, int index)
 
     Node *toAdd = Node_alloc(data, NULL);
     Node *curr = StrList->root;
+
     if (index == 0)
     {
         toAdd->next = curr;
@@ -103,24 +88,16 @@ void StrList_insertAt(StrList *StrList, const char *data, int index)
         return;
     }
 
-    for (int i = 0; i < index; i++)
+    int counter = 0;
+
+    while (counter < index - 1)
     {
         curr = curr->next;
-        if (curr->next == NULL)
-        {
-            if (i == index - 1)
-            {
-                curr->next = toAdd;
-            }
-            else
-            {
-                break;
-            }
-        }
+        counter++;
     }
-    Node *temp = curr->next;
+
+    toAdd->next = curr->next;
     curr->next = toAdd;
-    toAdd->next = temp;
 }
 
 void StrList_free(StrList *StrList)
@@ -140,7 +117,7 @@ void StrList_free(StrList *StrList)
     free(root);
 }
 
-void StrList_print(StrList *StrList)
+void StrList_print(const StrList *StrList)
 {
     Node *temp = StrList->root;
     while (temp)
