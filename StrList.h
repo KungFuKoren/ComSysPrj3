@@ -109,7 +109,7 @@ int StrList_isEqual(const StrList *StrList1, const StrList *StrList2);
  * Clones the given StrList.
  * It's the user responsibility to free it with StrList_free.
  */
-StrList *StrList_clone(const StrList *StrList);
+StrList *StrList_clone(const StrList *_StrList);
 
 /*
  * Reverces the given StrList.

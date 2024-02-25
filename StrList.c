@@ -11,6 +11,7 @@ Node *Node_alloc(char *data, Node *next)
     }
     curr->data = data;
     curr->next = next;
+    return curr;
 }
 
 StrList *StrList_alloc(Node *root)
@@ -21,6 +22,7 @@ StrList *StrList_alloc(Node *root)
         exit(1);
     }
     lstRoot->root = root;
+    return lstRoot;
 }
 
 StrList *create_list(int size)
@@ -32,7 +34,6 @@ StrList *create_list(int size)
     for (int i = 0; i < size; i++)
     {
         char word[WORD_SIZE];
-        printf("Enter word: ");
         scanf("%s", word);
 
         char *newWord = (char *)malloc(strlen(word) + 1);
@@ -124,18 +125,22 @@ void StrList_free(StrList *StrList)
 
 void StrList_print(const StrList *StrList)
 {
+    if (!StrList || !StrList->root)
+        return;
+
     Node *temp = StrList->root;
     while (temp)
     {
-        printf("%s\n", temp->data);
+        printf("%s ", temp->data);
         temp = temp->next;
     }
+    printf("\n");
 }
 
 void StrList_printAt(const StrList *Strlist, int index)
 {
     size_t strListSize = StrList_size(Strlist);
-    if (index >= strListSize || index < 0)
+    if (strListSize == 0 || index >= strListSize || index < 0)
         return;
 
     Node *curr = Strlist->root;
@@ -151,16 +156,16 @@ void StrList_printAt(const StrList *Strlist, int index)
 
 char *StrList_firstData(const StrList *StrList)
 {
-    Node *node = StrList->root;
-    if (node && node->data)
-    {
-        return node->data;
-    }
+    if (!StrList || !StrList->root)
+        return "";
+    Node *root = StrList->root;
+
+    return root->data;
 }
 
 int StrList_printLen(const StrList *Strlist)
 {
-    if (!Strlist)
+    if (!Strlist || !Strlist->root)
     {
         return 0;
     }
@@ -181,7 +186,7 @@ int StrList_printLen(const StrList *Strlist)
 int StrList_count(StrList *StrList, const char *data)
 {
     if (!StrList)
-        return;
+        return 0;
     Node *curr = StrList->root;
     int counter = 0;
 
@@ -201,33 +206,32 @@ void StrList_remove(StrList *StrList, const char *data)
         return;
 
     Node *curr = StrList->root;
+    Node *prev = NULL;
 
-    while (strcmp(curr->data, data) == 0)
+    while (curr && strcmp(curr->data, data) == 0)
     {
         StrList->root = curr->next;
+        free(curr->data);
         free(curr);
         curr = StrList->root;
     }
 
-    Node *next = curr->next;
-
-    while (next)
+    while (curr)
     {
-        if (strcmp(next->data, data) == 0)
+        if (strcmp(curr->data, data) == 0)
         {
-            curr->next = next->next;
-            free(next->data);
-            free(next);
+            if (prev)
+                prev->next = curr->next;
+            free(curr->data);
+            free(curr);
+            curr = prev->next;
         }
-        curr = curr->next;
-        next = curr->next;
+        else
+        {
+            prev = curr;
+            curr = curr->next;
+        }
     }
-    // if (strcmp(curr->data, data) == 0)
-    // {
-
-    //     free(curr->data);
-    //     free(curr);
-    // }
 }
 
 void StrList_removeAt(StrList *StrList, int index)
@@ -257,4 +261,150 @@ void StrList_removeAt(StrList *StrList, int index)
         free(next->data);
         free(next);
     }
+}
+
+int StrList_isEqual(const StrList *StrList1, const StrList *StrList2)
+{
+    size_t strListSize1 = StrList_size(StrList1);
+    size_t strListSize2 = StrList_size(StrList2);
+    if (strListSize1 != strListSize2)
+    {
+        return 0;
+    }
+    int counter = 0;
+    Node *root1 = StrList1->root;
+    Node *root2 = StrList2->root;
+    while (counter < strListSize1)
+    {
+        if (root1->data != root2->data)
+        {
+            return 0;
+        }
+        counter++;
+        root1 = root1->next;
+        root2 = root2->next;
+    }
+    return 1;
+}
+
+void StrList_reverse(StrList *StrList)
+{
+    if (!StrList || !StrList->root)
+        return;
+
+    size_t strListSize = StrList_size(StrList);
+
+    if (strListSize == 1)
+        return;
+
+    Node *nodesArr[strListSize];
+
+    Node *curr = StrList->root;
+    for (int i = 0; i < strListSize; i++)
+    {
+        nodesArr[i] = curr;
+        curr = curr->next;
+    }
+
+    curr = nodesArr[strListSize - 1];
+    StrList->root = curr;
+
+    for (int i = strListSize - 1; i > 0; i--)
+        nodesArr[i]->next = nodesArr[i - 1];
+
+    nodesArr[0]->next = NULL;
+}
+
+StrList *StrList_clone(const StrList *_StrList)
+{
+    if (!_StrList || !_StrList->root)
+        return NULL;
+
+    size_t strListSize = StrList_size(_StrList);
+    Node *origRoot = _StrList->root;
+
+    if (strListSize == 0 || origRoot == NULL)
+    {
+        return NULL;
+    }
+
+    char *origData = origRoot->data;
+    Node *copyRoot = Node_alloc(origData, NULL);
+    StrList *clonedList = StrList_alloc(copyRoot);
+    int counter = 1;
+
+    while (counter < strListSize)
+    {
+        origRoot = origRoot->next;
+        origData = origRoot->data;
+        Node *temp = Node_alloc(origData, NULL);
+        copyRoot->next = temp;
+        copyRoot = copyRoot->next;
+        counter++;
+    }
+    return clonedList;
+}
+
+void StrList_sort(StrList *StrList)
+{
+    if (!StrList || !StrList->root)
+        return;
+
+    size_t strListSize = StrList_size(StrList);
+
+    if (strListSize == 1)
+        return;
+
+    Node *nodesArr[strListSize];
+
+    Node *curr = StrList->root;
+    for (int i = 0; i < strListSize; i++)
+    {
+        nodesArr[i] = curr;
+        curr = curr->next;
+    }
+
+    for (int i = 0; i < strListSize; i++)
+    {
+        for (int j = i + 1; j < strListSize; j++)
+        {
+            if (strcmp(nodesArr[i]->data, nodesArr[j]->data) > 0)
+            {
+                Node *temp = nodesArr[i];
+                nodesArr[i] = nodesArr[j];
+                nodesArr[j] = temp;
+            }
+        }
+    }
+
+    StrList->root = nodesArr[0];
+    curr = nodesArr[0];
+
+    for (int i = 0; i < strListSize - 1; i++)
+    {
+        curr->next = nodesArr[i + 1];
+        curr = curr->next;
+    }
+
+    curr->next = NULL;
+}
+
+int StrList_isSorted(StrList *StrList)
+{
+    if (!StrList || !StrList->root)
+        return 1;
+
+    Node *curr = StrList->root;
+    Node *next = curr->next;
+
+    while (next)
+    {
+        if (strcmp(curr->data, next->data) > 0)
+            return 0;
+
+        curr = next;
+        next = curr->next;
+    }
+
+    return 1;
 }
